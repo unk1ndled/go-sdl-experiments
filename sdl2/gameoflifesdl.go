@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/unk1ndled/nier/gameoflife"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 const (
-	screenWidth  = 900
-	screenHeight = 800
+	screenWidth  = 1400
+	screenHeight = 700
 	cellSize     = 5
 )
 
@@ -42,19 +43,29 @@ func (g *Game) DrawRectangle(x, y int32) {
 
 func (g *Game) DrawLiveCells() {
 	g.Renderer.SetDrawColor(0, 0, 0, 255)
-	for _, pair := range *g.Board.Livecells {
+	for _, pair := range g.Board.Livecells {
 		g.DrawRectangle(int32(pair[0]*cellSize), int32(pair[1]*cellSize))
 	}
 }
 
 func (g *Game) Run() {
 	running := true
+	lastFrameTime := time.Now()
+	frames := 0
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent:
 				running = false
 			}
+		}
+
+		// Calculate FPS
+		frames++
+		if time.Since(lastFrameTime) >= time.Second {
+			fmt.Printf("FPS: %d\n", frames)
+			frames = 0
+			lastFrameTime = time.Now()
 		}
 
 		g.Board.ComputeGrid()

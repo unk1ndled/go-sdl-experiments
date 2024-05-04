@@ -7,25 +7,25 @@ import (
 type Grid [][]int16
 
 type Board struct {
-	grid      *Grid
-	Livecells *[][2]int16
+	grid      Grid
+	Livecells [][2]int16
 }
 
 func (b *Board) GetGrid() Grid {
-	return (*b.grid)
+	return (b.grid)
 }
 func (b *Board) ComputeGrid() {
 	grid := b.GetGrid()
 	height := len(grid)
 	width := len(grid[0])
-	b.Livecells = &[][2]int16{}
+	b.Livecells = [][2]int16{}
 	temp := NewClearGrid(width, height)
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
 			isAlive := grid.ComputeNeighbours(i, j)
-			(*temp)[i][j] = isAlive
+			(temp)[i][j] = isAlive
 			if isAlive == 1 {
-				*b.Livecells = append((*b.Livecells), [2]int16{int16(i), int16(j)})
+				b.Livecells = append((b.Livecells), [2]int16{int16(i), int16(j)})
 			}
 		}
 	}
@@ -33,14 +33,15 @@ func (b *Board) ComputeGrid() {
 }
 
 func (g *Grid) ComputeNeighbours(i, j int) int16 {
-	size := len(*g)
+	height := len(*g)
+	width := len((*g)[0])
 	center := (*g)[i][j]
 	var neighbors int16
 
 	for x := i - 1; x <= i+1; x++ {
 		for y := j - 1; y <= j+1; y++ {
-			xIndex := (x + size) % size
-			yIndex := (y + size) % size
+			xIndex := (x + height) % height
+			yIndex := (y + width) % width
 			neighbors += (*g)[xIndex][yIndex]
 		}
 	}
@@ -60,18 +61,18 @@ func (g *Grid) ComputeNeighbours(i, j int) int16 {
 
 func NewBoard(width, height int) *Board {
 	cells := [][2]int16{}
-	return &Board{grid: NewGrid(width, height, &cells), Livecells: &cells}
+	return &Board{grid: NewGrid(width, height, &cells), Livecells: cells}
 }
 
-func NewClearGrid(width, height int) *Grid {
+func NewClearGrid(width, height int) Grid {
 	grid := make([][]int16, height)
 	for i := 0; i < height; i++ {
 		grid[i] = make([]int16, width)
 	}
-	return (*Grid)(&grid)
+	return (Grid)(grid)
 }
 
-func NewGrid(width, height int, livecells *[][2]int16) *Grid {
+func NewGrid(width, height int, livecells *[][2]int16) Grid {
 	grid := make([][]int16, height)
 	for i := 0; i < height; i++ {
 		grid[i] = make([]int16, width)
@@ -84,5 +85,5 @@ func NewGrid(width, height int, livecells *[][2]int16) *Grid {
 
 		}
 	}
-	return (*Grid)(&grid)
+	return (Grid)(grid)
 }
