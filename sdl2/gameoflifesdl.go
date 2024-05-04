@@ -73,7 +73,7 @@ func (g *Game) Run() {
 		g.DrawLiveCells()
 		g.DrawGrid()
 		g.Renderer.Present()
-		sdl.Delay(5)
+		// sdl.Delay(5)
 	}
 }
 

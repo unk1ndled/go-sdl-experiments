@@ -14,6 +14,8 @@ type Board struct {
 func (b *Board) GetGrid() Grid {
 	return (b.grid)
 }
+
+//Todo implement concurrency 
 func (b *Board) ComputeGrid() {
 	grid := b.GetGrid()
 	height := len(grid)
