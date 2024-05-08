@@ -8,6 +8,4 @@ visual projects using sdl2 and go
 
 
 ## rule 80 1D cellulare automaton
-<div style="text-align: center;">
 ![rule 80 1D cellulare automaton](images/ca.png)
-</div>
