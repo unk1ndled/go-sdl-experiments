@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	automata "github.com/unk1ndled/nier/automata/logic"
-	"github.com/unk1ndled/nier/ds"
+	automata "github.com/unk1ndled/nier/src/automata/logic"
+	"github.com/unk1ndled/nier/src/ds"
 	"github.com/veandco/go-sdl2/sdl"
 )
 

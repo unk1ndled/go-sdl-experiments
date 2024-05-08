@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	gameoflife "github.com/unk1ndled/nier/gameoflife/logic"
+	gameoflife "github.com/unk1ndled/nier/src/gameoflife/logic"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
