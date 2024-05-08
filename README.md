@@ -6,5 +6,8 @@ visual projects using sdl2 and go
 ## boucing boxes that gspawn other boxes on impact
 ![bouncing box](images/bb.png)
 
+
 ## rule 80 1D cellulare automaton
+<div style="text-align: center;">
 ![rule 80 1D cellulare automaton](images/ca.png)
+</div>
