@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	screenWidth  = 800
-	screenHeight = 800
+	screenWidth  = 500
+	screenHeight = 500
 	boidamount   = 100
 	boidsize     = 5
 )
@@ -44,14 +44,25 @@ func NewSym() *Sym {
 
 func (sym Sym) Update() {
 	// print("hii")
+	copy := boids.Copy(sym.Boids)
 	for _, boid := range sym.Boids {
+		boid.Flock(sym.Boids, *copy)
 		boid.Update()
 	}
 
 	for i := 0; i < len(sym.recs); i++ {
 		// making boids appear inside the screen at all times
-		sym.recs[i].X = (int32(sym.Positions[i][0]) + screenWidth) % screenWidth
-		sym.recs[i].Y = (int32(sym.Positions[i][1]) + screenWidth) % screenHeight
+		sym.recs[i].X = int32(sym.Positions[i][0]) % screenWidth
+		if sym.recs[i].X < 0 {
+			sym.recs[i].X += screenWidth
+		}
+
+		sym.recs[i].Y = int32(sym.Positions[i][1]) % screenHeight
+		if sym.recs[i].Y < 0 {
+			sym.recs[i].Y += screenHeight
+		}
+		// sym.recs[i].X = int32(sym.Positions[i][0])
+		// sym.recs[i].Y = int32(sym.Positions[i][1])
 	}
 	sym.renderBoids()
 }
