@@ -7,10 +7,15 @@ import (
 const (
 	maxVelocity = 5
 	maxforce    = 0.3
+	turnfactor  = 0.12
 
 	separationWeight = 0.42
 	alignmentWeight  = 0.20
 	cohesionWeight   = 0.15
+
+	// 	separationWeight = 0
+	// alignmentWeight  = 0
+	// cohesionWeight   = 0
 
 	protectedRange = 15
 	alignmentrange = 50
@@ -18,6 +23,13 @@ const (
 
 	startvlocity = 2
 	startacc     = 0
+)
+
+var (
+	top    float64 = 100
+	bottom float64 = 100
+	left   float64 = 100
+	right  float64 = 100
 )
 
 type Boid struct {
@@ -38,6 +50,27 @@ func NewBoid(x, y int) *Boid {
 func RandomBoid(x, y int) *Boid {
 	fx, fy := float64(x), float64(y)
 	return &Boid{position: ds.RandomVec2D(fx, fy), velocity: ds.RandomVec2D(startvlocity, startvlocity), acceleration: ds.RandomVec2D(startacc, startacc)}
+}
+
+func (b *Boid) AvoidWalls(w, h int32) {
+
+	steer := ds.NewVec2D(0, 0)
+	if b.position[0] < left {
+		steer[0] += turnfactor
+
+	} else if b.position[0] > float64(w)-right {
+		steer[0] -= turnfactor
+
+	}
+	if b.position[1] < top {
+		steer[1] += turnfactor
+
+	} else if b.position[1] > float64(h)-bottom {
+		steer[1] -= turnfactor
+	}
+
+	b.acceleration.Add(steer)
+
 }
 
 func (b *Boid) Alignment(snapshot []Boid) *ds.Vector2D {
@@ -137,14 +170,17 @@ func (b *Boid) Update(width, height int32) {
 	b.position.Add(b.velocity)
 
 	// stuck inside the screen
-	if b.position[0] < 0 || b.position[0] >= float64(width) {
-		b.position[0] = float64(int32(b.position[0]+float64(width)) % width)
-	}
+	// if b.position[0] < 0 || b.position[0] >= float64(width) {
+	// 	b.position[0] = float64(int32(b.position[0]+float64(width)) % width)
+	// }
 
-	if b.position[1] < 0 || b.position[1] >= float64(height) {
-		b.position[1] = float64(int32(b.position[1]+float64(height)) % height)
-	}
+	// if b.position[1] < 0 || b.position[1] >= float64(height) {
+	// 	b.position[1] = float64(int32(b.position[1]+float64(height)) % height)
+	// }
+
+	b.AvoidWalls(width, height)
 	b.velocity.Add(b.acceleration)
+
 	b.velocity.ClampMagnitude(float64(maxVelocity))
 	b.acceleration.MultiplyByScalar(0)
 }

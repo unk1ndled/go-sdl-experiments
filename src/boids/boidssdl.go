@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	screenWidth  = 1000
+	screenWidth  = 700
 	screenHeight = 700
 	boidamount   = 500
 	boidsize     = 4
