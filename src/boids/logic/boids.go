@@ -1,20 +1,23 @@
 package boids
 
 import (
-	"fmt"
-
 	"github.com/unk1ndled/nier/src/ds"
 )
 
 const (
 	maxVelocity = 5
-	maxforce    = 0.8
+	maxforce    = 0.3
 
-	cohesionradius   = 2
-	separationradius = 24
-	alignmentradius  = 12
-	startvlocity     = 5
-	startacc         = 0
+	separationWeight = 0.42
+	alignmentWeight  = 0.20
+	cohesionWeight   = 0.15
+
+	protectedRange = 15
+	alignmentrange = 50
+	grouping       = 46
+
+	startvlocity = 2
+	startacc     = 0
 )
 
 type Boid struct {
@@ -29,7 +32,7 @@ func (b *Boid) GetPos() *ds.Vector2D {
 
 func NewBoid(x, y int) *Boid {
 	fx, fy := float64(x), float64(y)
-	return &Boid{position: ds.NewVec2D(fx, fy), velocity: ds.RandomVec2DPositive(startvlocity, startvlocity), acceleration: ds.RandomVec2DPositive(startacc, startacc)}
+	return &Boid{position: ds.NewVec2D(fx, fy), velocity: ds.RandomVec2D(startvlocity, startvlocity), acceleration: ds.RandomVec2D(startacc, startacc)}
 }
 
 func RandomBoid(x, y int) *Boid {
@@ -37,80 +40,117 @@ func RandomBoid(x, y int) *Boid {
 	return &Boid{position: ds.RandomVec2D(fx, fy), velocity: ds.RandomVec2D(startvlocity, startvlocity), acceleration: ds.RandomVec2D(startacc, startacc)}
 }
 
-func (b *Boid) Flock(boids, snapshot []Boid) {
-	alignment := ds.NewVec2D(0, 0)
-	cohesion := ds.NewVec2D(0, 0)
-	separation := ds.NewVec2D(0, 0)
-	numa, nums, numc := 0, 0, 0
+func (b *Boid) Alignment(snapshot []Boid) *ds.Vector2D {
+	avgVelocity := ds.NewVec2D(0, 0)
+	count := 0
 
-	for i := 0; i < len(snapshot); i++ {
-		other := snapshot[i]
-		dist := b.position.Dist(other.position)
-		if b != &other && dist < alignmentradius {
-			alignment.Add(other.velocity)
-			numa++
-		}
-		if b != &other && dist < separationradius {
-
-			//vector that points from the other to this boid
-			diff := ds.SubtractVectors(*b.position, *other.position)
-			//its influence is inversly proportional to this boid
-			inverse := dist * dist
-			if inverse == 0 {
-				inverse = 1
+	for _, otherBoid := range snapshot {
+		if otherBoid != *b {
+			distance := b.position.Dist(otherBoid.position)
+			if distance < alignmentrange {
+				avgVelocity.Add(otherBoid.velocity)
+				count++
 			}
-			diff.MultiplyByScalar(1 / inverse)
-			// fmt.Printf("sepearation : %v ", separation)
-			separation.Add(diff)
-			nums++
 		}
-		if b != &other && dist < cohesionradius {
-			cohesion.Add(other.position)
-			numc++
+	}
+
+	if count > 0 {
+		avgVelocity.MultiplyByScalar(1 / float64(count))
+		avgVelocity.SetMagnitude(maxVelocity)
+		avgVelocity.Subtract(b.velocity)
+		avgVelocity.ClampMagnitude(maxforce)
+	}
+
+	return avgVelocity
+}
+
+func (boid *Boid) Cohesion(snapshot []Boid) *ds.Vector2D {
+	centerOfMass := ds.NewVec2D(0, 0)
+	count := 0
+
+	for _, otherBoid := range snapshot {
+		if otherBoid != *boid {
+			distance := boid.position.Dist(otherBoid.position)
+			if distance < grouping {
+				centerOfMass.Add(otherBoid.position)
+				count++
+			}
 		}
-		// fmt.Printf("separation final : %v ", separation)
 	}
-	if numa > 0 {
-		diva := float64(1 / numa)
-		Process(alignment, b.velocity, diva, maxVelocity, maxforce)
+
+	if count > 0 {
+		centerOfMass.MultiplyByScalar(1 / float64(count))
+		desired := ds.SubtractVectors(*centerOfMass, *boid.position)
+		desired.SetMagnitude(maxVelocity)
+		steer := ds.SubtractVectors(*desired, *boid.velocity)
+		steer.ClampMagnitude(maxforce)
+		return steer
 	}
-	if nums > 0 {
-		divs := float64(1 / nums)
-		Process(separation, b.velocity, divs, maxVelocity, maxforce)
+
+	return ds.NewVec2D(0, 0)
+}
+
+func (b *Boid) Separation(snapshot []Boid) *ds.Vector2D {
+	steer := ds.NewVec2D(0, 0)
+	count := 0
+
+	for _, otherBoid := range snapshot {
+		if otherBoid != *b {
+			distance := b.position.Dist(otherBoid.position)
+			if distance < protectedRange {
+				diff := ds.SubtractVectors(*b.position, *otherBoid.position)
+				diff.SetMagnitude(1 / distance * distance)
+				steer.Add(diff)
+				count++
+			}
+		}
 	}
-	if numc > 0 {
-		divc := float64(1 / numc)
-		Process(cohesion, b.position, divc, maxVelocity, maxforce)
-		cohesion.Subtract(b.velocity)
+
+	if count > 0 {
+
+		// steer.MultiplyByScalar(float64(1 / count))
+		steer.SetMagnitude(maxVelocity)
+		steer.Subtract(b.velocity)
+		steer.ClampMagnitude(maxforce)
 	}
-	b.acceleration.Add(alignment)
-	// b.acceleration.Add(separation)
-	// b.acceleration.Add(cohesion)
+
+	return steer
 
 }
 
-func Process(vec, sub *ds.Vector2D, scalar, mag, clamp float64) {
-	vec.MultiplyByScalar(scalar)
-	vec.SetMagnitude(mag)
-	fmt.Printf(" mag is %f ", vec.Magnitude())
-	vec.Subtract(sub)
-	vec.ClampMagnitude(clamp)
+func (b *Boid) Flock(snapshot []Boid) {
+	ali := b.Alignment(snapshot)
+	coh := b.Cohesion(snapshot)
+	sep := b.Separation(snapshot)
+
+	sep.MultiplyByScalar(separationWeight)
+	ali.MultiplyByScalar(alignmentWeight)
+	coh.MultiplyByScalar(cohesionWeight)
+
+	b.acceleration.Add(sep)
+	b.acceleration.Add(ali)
+	b.acceleration.Add(coh)
+
 }
 
-func (b *Boid) Update() {
+func (b *Boid) Update(width, height int32) {
 	b.position.Add(b.velocity)
-	if b.velocity[0] > 0 || b.velocity[1] > 0 {
-		print("error")
+
+	// stuck inside the screen
+	if b.position[0] < 0 || b.position[0] >= float64(width) {
+		b.position[0] = float64(int32(b.position[0]+float64(width)) % width)
+	}
+
+	if b.position[1] < 0 || b.position[1] >= float64(height) {
+		b.position[1] = float64(int32(b.position[1]+float64(height)) % height)
 	}
 	b.velocity.Add(b.acceleration)
 	b.velocity.ClampMagnitude(float64(maxVelocity))
 	b.acceleration.MultiplyByScalar(0)
 }
 
-func Copy(og []Boid) *[]Boid {
+func Copy(og []Boid) []Boid {
 	copy := []Boid{}
-	for _, v := range og {
-		copy = append(copy, v)
-	}
-	return &copy
+	copy = append(copy, og...)
+	return copy
 }

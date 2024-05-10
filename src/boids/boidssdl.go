@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	screenWidth  = 500
-	screenHeight = 500
-	boidamount   = 100
-	boidsize     = 5
+	screenWidth  = 1000
+	screenHeight = 700
+	boidamount   = 500
+	boidsize     = 4
 )
 
 var (
@@ -33,7 +33,7 @@ func NewSym() *Sym {
 	for i := 0; i < boidamount; i++ {
 
 		// int conversion issues
-		boid := boids.NewBoid(int(screenWidth/2), int(screenHeight/2))
+		boid := boids.RandomBoid(int(screenWidth), int(screenHeight))
 		sym.Boids = append(sym.Boids, *boid)
 		sym.Positions = append(sym.Positions, boid.GetPos())
 		x, y, w, h := int32(sym.Positions[i][0]), int32(sym.Positions[i][1]), int32(boidsize), int32(boidsize)
@@ -43,26 +43,26 @@ func NewSym() *Sym {
 }
 
 func (sym Sym) Update() {
-	// print("hii")
 	copy := boids.Copy(sym.Boids)
 	for _, boid := range sym.Boids {
-		boid.Flock(sym.Boids, *copy)
-		boid.Update()
+		boid.Flock(copy)
+		//update boid position taking in consideration screen dimentions
+		boid.Update(screenWidth, screenHeight)
 	}
 
 	for i := 0; i < len(sym.recs); i++ {
 		// making boids appear inside the screen at all times
-		sym.recs[i].X = int32(sym.Positions[i][0]) % screenWidth
-		if sym.recs[i].X < 0 {
-			sym.recs[i].X += screenWidth
-		}
+		// sym.recs[i].X = int32(sym.Positions[i][0]) % screenWidth
+		// if sym.recs[i].X < 0 {
+		// 	sym.recs[i].X += screenWidth
+		// }
 
-		sym.recs[i].Y = int32(sym.Positions[i][1]) % screenHeight
-		if sym.recs[i].Y < 0 {
-			sym.recs[i].Y += screenHeight
-		}
-		// sym.recs[i].X = int32(sym.Positions[i][0])
-		// sym.recs[i].Y = int32(sym.Positions[i][1])
+		// sym.recs[i].Y = int32(sym.Positions[i][1]) % screenHeight
+		// if sym.recs[i].Y < 0 {
+		// 	sym.recs[i].Y += screenHeight
+		// }
+		sym.recs[i].X = int32(sym.Positions[i][0])
+		sym.recs[i].Y = int32(sym.Positions[i][1])
 	}
 	sym.renderBoids()
 }
@@ -81,7 +81,7 @@ func main() {
 	}
 	defer sdl.Quit()
 
-	window, err := sdl.CreateWindow("cellulare automata", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, screenWidth, screenHeight, sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow("birdies", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, screenWidth, screenHeight, sdl.WINDOW_SHOWN)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, " Failed to Create window : %s\n", err)
 		os.Exit(2)

@@ -46,12 +46,6 @@ func (vec *Vector2D) Normalized() *Vector2D {
 		return &Vector2D{0, 0}
 	}
 	normalized := &Vector2D{vec[0] / mag, vec[1] / mag}
-	if vec[0] < 0 {
-		normalized[0] = -normalized[0]
-	}
-	if vec[1] < 0 {
-		normalized[1] = -normalized[1]
-	}
 	return normalized
 }
 
