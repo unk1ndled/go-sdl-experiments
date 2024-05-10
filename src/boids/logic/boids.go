@@ -13,23 +13,23 @@ const (
 	alignmentWeight  = 0.20
 	cohesionWeight   = 0.15
 
-	// 	separationWeight = 0
+	// separationWeight = 0
 	// alignmentWeight  = 0
 	// cohesionWeight   = 0
 
 	protectedRange = 15
-	alignmentrange = 50
 	grouping       = 46
+	alignmentrange = 50
 
 	startvlocity = 2
 	startacc     = 0
 )
 
 var (
-	top    float64 = 100
-	bottom float64 = 100
-	left   float64 = 100
-	right  float64 = 100
+	top    float64 = 20
+	bottom float64 = 20
+	left   float64 = 20
+	right  float64 = 20
 )
 
 type Boid struct {

@@ -51,16 +51,6 @@ func (sym Sym) Update() {
 	}
 
 	for i := 0; i < len(sym.recs); i++ {
-		// making boids appear inside the screen at all times
-		// sym.recs[i].X = int32(sym.Positions[i][0]) % screenWidth
-		// if sym.recs[i].X < 0 {
-		// 	sym.recs[i].X += screenWidth
-		// }
-
-		// sym.recs[i].Y = int32(sym.Positions[i][1]) % screenHeight
-		// if sym.recs[i].Y < 0 {
-		// 	sym.recs[i].Y += screenHeight
-		// }
 		sym.recs[i].X = int32(sym.Positions[i][0])
 		sym.recs[i].Y = int32(sym.Positions[i][1])
 	}
@@ -68,7 +58,9 @@ func (sym Sym) Update() {
 }
 
 func (sym Sym) renderBoids() {
+
 	renderer.SetDrawColor(155, 0, 155, 255)
+	// renderer.SetDrawColor(uint8(rand.Intn(255)), uint8(rand.Intn(255)), uint8(rand.Intn(255)), uint8(rand.Intn(255)))
 	renderer.FillRects(sym.recs)
 }
 
@@ -108,7 +100,7 @@ func main() {
 
 		sym.Update()
 		renderer.Present()
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 	}
 
 }
