@@ -43,6 +43,7 @@ func (b *Box) move() {
 	movedirection(&b.xdirection, b.speed, &b.x)
 	movedirection(&b.ydirection, b.speed, &b.y)
 	boost := b.speed + rand.Intn(b.speed*2)
+	
 	if b.x+b.width >= screenWidth || b.x <= 0 {
 		b.xdirection = !b.xdirection
 		movedirection(&b.xdirection, boost, &b.x)
@@ -52,7 +53,6 @@ func (b *Box) move() {
 		b.ydirection = !b.ydirection
 		movedirection(&b.ydirection, boost, &b.y)
 		b.handleCollision(true, !(b.y <= 0))
-
 	}
 }
 

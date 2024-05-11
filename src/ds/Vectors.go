@@ -16,8 +16,8 @@ func NewVec2D(x, y float64) *Vector2D {
 }
 
 func RandomVec2DPositive(maxx, maxy float64) *Vector2D {
-	x := -rand.Float64() * (maxx)
-	y := -rand.Float64() * (maxy)
+	x := rand.Float64() * (maxx)
+	y := rand.Float64() * (maxy)
 	return NewVec2D(x, y)
 }
 
