@@ -1,6 +1,7 @@
 package pong
 
 import (
+	"fmt"
 	"math"
 	"time"
 
@@ -9,15 +10,18 @@ import (
 )
 
 const (
-	ballRadius           = 5
-	balldiameter         = 2 * ballRadius
-	maxVelocity  float64 = 15
+	ballRadius              = 5
+	maxVelocity     float64 = 15
+	collisionFactor         = 2
+	minXVelocity            = maxVelocity / 3
+
+	verticalboost = 1
 
 	stickSpeed  = 7
 	stickHeight = 150
 	stickWidth  = 10
 
-	distanceToBorder float64 = 35
+	distanceToBorder float64 = 50
 )
 
 var (
@@ -32,25 +36,30 @@ type Ball struct {
 	acceleration *ds.Vector2D
 }
 
-func (b *Ball) HandleWallCollisions() {
-	x, y := b.position[0], b.position[1]
-	if x+ballRadius >= float64(screenWidth) || x-ballRadius <= 0 {
-		b.velocity[0] = -b.velocity[0]
-	}
-	if y+ballRadius >= float64(screenHeight) || y-ballRadius <= 0 {
-		b.velocity[1] = -b.velocity[1]
-	}
-
-}
-
-func (b *Ball) Update() {
-	b.position.Add(b.velocity)
-
-	//these walls
+func (b *Ball) update() {
 	b.velocity.Add(b.acceleration)
 	b.velocity.ClampMagnitude(maxVelocity)
-	b.HandleWallCollisions()
+	if math.Abs(b.velocity[0]) < minXVelocity {
+		b.velocity[0] = minXVelocity * (b.velocity[0] / math.Abs(b.velocity[0]))
+	}
 	b.acceleration.MultiplyByScalar(0)
+
+	b.position.Add(b.velocity)
+}
+
+func (b *Ball) handleHorizontalStickCollision(extra int) {
+	b.acceleration[0] = -b.velocity[0]
+	b.acceleration[1] = math.Abs(float64(extra)) + math.Abs(b.velocity[1])
+	if extra > 0 {
+		b.acceleration[1] *= -1
+	}
+}
+
+func (b *Ball) reset() {
+	b.position = ds.NewVec2D(float64(screenWidth/2), float64(screenHeight/2))
+	b.velocity = ds.RandomVec2D(10, 3).Normalized()
+	b.acceleration = ds.RandomVec2D(0, 0)
+	b.velocity.MultiplyByScalar(maxVelocity / 2)
 }
 
 func drawCircle(renderer *sdl.Renderer, centerX, centerY int32) {
@@ -96,19 +105,18 @@ type Pong struct {
 	score [2]int8
 }
 
-func InitPong(screenwidth, screenheight int32, renderer *sdl.Renderer) *Pong {
-	screenWidth = screenwidth
-	screenHeight = screenheight
+func InitPong(sw, sh int32, renderer *sdl.Renderer) *Pong {
+	screenWidth = sw
+	screenHeight = sh
 	pong := &Pong{
 
 		renderer: renderer,
 
-		leftStick: ds.NewVec2D(distanceToBorder, float64(screenheight)/2),
-		//  should be float64(screenwidth)-*distanceToBorder
-		rightStick: ds.NewVec2D(float64(screenwidth)-(distanceToBorder+stickWidth), float64(screenheight)/2),
+		leftStick:  ds.NewVec2D(distanceToBorder, float64(screenHeight)/2),
+		rightStick: ds.NewVec2D(float64(screenWidth)-(distanceToBorder+stickWidth), float64(screenHeight)/2),
 
 		ball: Ball{
-			position:     ds.NewVec2D(float64(screenwidth/2), float64(screenheight/2)),
+			position:     ds.NewVec2D(float64(screenWidth/2), float64(screenHeight/2)),
 			velocity:     ds.RandomVec2D(5, 1).Normalized(),
 			acceleration: ds.RandomVec2D(0, 0),
 		},
@@ -146,33 +154,77 @@ func (p *Pong) moveStick(stick *ds.Vector2D, isUp bool) {
 	stick.Add(ds.NewVec2D(0, float64(sign)*increment))
 }
 
-func (p *Pong) HandleInput() {
+func (p *Pong) HandleInput() [2]int {
 
+	// left index for left stick and right for right this array will contain a bonus y coordinate boost after collision
+	extra := [2]int{0, 0}
 	// Check for key presses
 	keys := sdl.GetKeyboardState()
 	if keys[sdl.SCANCODE_W] != 0 {
 		p.moveStick(p.leftStick, true)
-	}
-	if keys[sdl.SCANCODE_S] != 0 {
+		extra[0] = verticalboost
+	} else if keys[sdl.SCANCODE_S] != 0 {
 		p.moveStick(p.leftStick, false)
+		extra[0] = -verticalboost
+
 	}
 	if keys[sdl.SCANCODE_UP] != 0 {
 		p.moveStick(p.rightStick, true)
-	}
-	if keys[sdl.SCANCODE_DOWN] != 0 {
+		extra[1] = verticalboost
+	} else if keys[sdl.SCANCODE_DOWN] != 0 {
 		p.moveStick(p.rightStick, false)
+		extra[1] = -verticalboost
 	}
+	//update sticks for drawing
 	p.sticks[0].Y = int32(p.leftStick[1])
 	p.sticks[1].Y = int32(p.rightStick[1])
+	return extra
+
+}
+
+func (p *Pong) handleWallCollisions() {
+	x, y := p.ball.position[0], p.ball.position[1]
+	if y+ballRadius >= float64(screenHeight) || y-ballRadius <= 0 {
+		p.ball.acceleration[1] = -collisionFactor * p.ball.velocity[1]
+	}
+	//refactor
+	if x+ballRadius >= float64(screenWidth) {
+		p.ball.reset()
+		p.score[0] += 1
+		fmt.Printf("score is : \n right : %d left : %d \n", p.score[0], p.score[1])
+		time.Sleep(500 * time.Millisecond)
+	} else if x-ballRadius <= 0 {
+		p.ball.reset()
+		p.score[1] += 1
+		fmt.Printf("score is : \n right : %d left : %d \n", p.score[0], p.score[1])
+		time.Sleep(500 * time.Millisecond)
+
+	}
+}
+
+func (p *Pong) handleCollisions(extra [2]int) {
+	x, y := p.ball.position[0], p.ball.position[1]
+
+	// Function to check hortizontal collision with a stick
+	checkStickCollision := func(stickPos *ds.Vector2D) bool {
+		return x+ballRadius >= stickPos[0] && x-ballRadius <= stickPos[0]+stickWidth &&
+			(y+ballRadius >= stickPos[1] && y-ballRadius <= stickPos[1]+stickHeight)
+	}
+
+	// Check collision with right stick
+	if checkStickCollision(p.rightStick) {
+		p.ball.handleHorizontalStickCollision(extra[1])
+		// Check collision with left stick
+	} else if checkStickCollision(p.leftStick) {
+		p.ball.handleHorizontalStickCollision(extra[0])
+	}
+	p.ball.acceleration.MultiplyByScalar(collisionFactor)
 }
 
 func (p *Pong) Update() {
 	p.renderer.SetDrawColor(255, 255, 255, 255)
 	p.renderer.DrawRects(p.sticks)
-
-	p.ball.Update()
 	drawCircle(p.renderer, int32(p.ball.position[0]), int32(p.ball.position[1]))
-	p.handleCollisions()
 }
 
 func (p *Pong) Play() {
@@ -187,21 +239,17 @@ func (p *Pong) Play() {
 			}
 		}
 
-		p.HandleInput()
+		//physics update
+		extra := p.HandleInput()
+		p.handleCollisions(extra)
+		p.handleWallCollisions()
+		p.ball.update()
+
+		//vis update
 		p.Update()
 
 		p.renderer.SetDrawColor(255, 0, 0, 255)
 		p.renderer.Present()
 		time.Sleep(10 * time.Millisecond)
 	}
-}
-
-func (p *Pong) handleCollisions() {
-	x, y := p.ball.position[0], p.ball.position[1]
-	if x+ballRadius >= p.rightStick[0] && (y+ballRadius >= p.rightStick[1] && y-ballRadius <= p.rightStick[1]+stickHeight) {
-		p.ball.velocity[0] = -p.ball.velocity[0]
-	} else if x-ballRadius <= p.leftStick[0] && (y+ballRadius >= p.leftStick[1] && y-ballRadius <= p.leftStick[1]+stickHeight) {
-		p.ball.velocity[0] = -p.ball.velocity[0]
-	}
-
 }
