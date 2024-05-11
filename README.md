@@ -9,3 +9,9 @@ visual projects using sdl2 and go
 
 ## rule 80 1D cellulare automaton
 ![rule 80 1D cellulare automaton](images/ca.png)
+
+## boids
+![boids](images/boids.gif.png)
+
+## pong
+![pong](images/pong.png)
