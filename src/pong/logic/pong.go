@@ -20,6 +20,8 @@ const (
 	stickSpeed  = 7
 	stickHeight = 150
 	stickWidth  = 10
+	//extra stick length to help users
+	invisStick = 10
 
 	distanceToBorder float64 = 50
 )
@@ -184,22 +186,25 @@ func (p *Pong) HandleInput() [2]int {
 
 func (p *Pong) handleWallCollisions() {
 	x, y := p.ball.position[0], p.ball.position[1]
+
 	if y+ballRadius >= float64(screenHeight) || y-ballRadius <= 0 {
 		p.ball.acceleration[1] = -collisionFactor * p.ball.velocity[1]
 	}
-	//refactor
-	if x+ballRadius >= float64(screenWidth) {
-		p.ball.reset()
-		p.score[0] += 1
-		fmt.Printf("score is : \n right : %d left : %d \n", p.score[0], p.score[1])
-		time.Sleep(500 * time.Millisecond)
-	} else if x-ballRadius <= 0 {
-		p.ball.reset()
-		p.score[1] += 1
-		fmt.Printf("score is : \n right : %d left : %d \n", p.score[0], p.score[1])
-		time.Sleep(500 * time.Millisecond)
 
+	
+	// Check collision with right wall
+	if x+ballRadius >= float64(screenWidth) {
+		p.handleWallCollisionReset(0)
+	} else if x-ballRadius <= 0 { // Check collision with left wall
+		p.handleWallCollisionReset(1)
 	}
+}
+
+func (p *Pong) handleWallCollisionReset(player int) {
+	p.ball.reset()
+	p.score[player]++
+	fmt.Printf("Score is:\nRight: %d\nLeft: %d\n", p.score[0], p.score[1])
+	time.Sleep(500 * time.Millisecond)
 }
 
 func (p *Pong) handleCollisions(extra [2]int) {
@@ -208,7 +213,7 @@ func (p *Pong) handleCollisions(extra [2]int) {
 	// Function to check hortizontal collision with a stick
 	checkStickCollision := func(stickPos *ds.Vector2D) bool {
 		return x+ballRadius >= stickPos[0] && x-ballRadius <= stickPos[0]+stickWidth &&
-			(y+ballRadius >= stickPos[1] && y-ballRadius <= stickPos[1]+stickHeight)
+			(y+ballRadius >= stickPos[1]-invisStick && y-ballRadius <= stickPos[1]+stickHeight+invisStick)
 	}
 
 	// Check collision with right stick
