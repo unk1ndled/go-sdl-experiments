@@ -92,10 +92,6 @@ func main() {
 			if e.GetType() == sdl.QUIT {
 				quit = true
 			}
-			switch e := e.(type) {
-			case *sdl.KeyboardEvent:
-				fmt.Printf("%d", e.Keysym)
-			}
 		}
 
 		sym.Update()
