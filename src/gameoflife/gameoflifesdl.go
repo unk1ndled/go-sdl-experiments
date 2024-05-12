@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	screenWidth  = 1400
-	screenHeight = 700
+	screenWidth  = 400
+	screenHeight = 400
 	cellSize     = 5
 )
 
@@ -73,7 +73,7 @@ func (g *Game) Run() {
 		g.DrawLiveCells()
 		g.DrawGrid()
 		g.Renderer.Present()
-		// sdl.Delay(5)
+		sdl.Delay(50)
 	}
 }
 
