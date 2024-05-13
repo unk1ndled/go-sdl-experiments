@@ -1,7 +1,7 @@
 package boids
 
 import (
-	"github.com/unk1ndled/nier/src/ds"
+	"github.com/unk1ndled/nier/src/unk"
 )
 
 const (
@@ -33,28 +33,28 @@ var (
 )
 
 type Boid struct {
-	position     *ds.Vector2D
-	velocity     *ds.Vector2D
-	acceleration *ds.Vector2D
+	position     *unk.Vector2D
+	velocity     *unk.Vector2D
+	acceleration *unk.Vector2D
 }
 
-func (b *Boid) GetPos() *ds.Vector2D {
+func (b *Boid) GetPos() *unk.Vector2D {
 	return b.position
 }
 
 func NewBoid(x, y int) *Boid {
 	fx, fy := float64(x), float64(y)
-	return &Boid{position: ds.NewVec2D(fx, fy), velocity: ds.RandomVec2D(startvlocity, startvlocity), acceleration: ds.RandomVec2D(startacc, startacc)}
+	return &Boid{position: unk.NewVec2D(fx, fy), velocity: unk.RandomVec2D(startvlocity, startvlocity), acceleration: unk.RandomVec2D(startacc, startacc)}
 }
 
 func RandomBoid(x, y int) *Boid {
 	fx, fy := float64(x), float64(y)
-	return &Boid{position: ds.RandomVec2D(fx, fy), velocity: ds.RandomVec2D(startvlocity, startvlocity), acceleration: ds.RandomVec2D(startacc, startacc)}
+	return &Boid{position: unk.RandomVec2D(fx, fy), velocity: unk.RandomVec2D(startvlocity, startvlocity), acceleration: unk.RandomVec2D(startacc, startacc)}
 }
 
 func (b *Boid) AvoidWalls(w, h int32) {
 
-	steer := ds.NewVec2D(0, 0)
+	steer := unk.NewVec2D(0, 0)
 	if b.position[0] < left {
 		steer[0] += turnfactor
 
@@ -73,8 +73,8 @@ func (b *Boid) AvoidWalls(w, h int32) {
 
 }
 
-func (b *Boid) Alignment(snapshot []Boid) *ds.Vector2D {
-	avgVelocity := ds.NewVec2D(0, 0)
+func (b *Boid) Alignment(snapshot []Boid) *unk.Vector2D {
+	avgVelocity := unk.NewVec2D(0, 0)
 	count := 0
 
 	for _, otherBoid := range snapshot {
@@ -97,8 +97,8 @@ func (b *Boid) Alignment(snapshot []Boid) *ds.Vector2D {
 	return avgVelocity
 }
 
-func (boid *Boid) Cohesion(snapshot []Boid) *ds.Vector2D {
-	centerOfMass := ds.NewVec2D(0, 0)
+func (boid *Boid) Cohesion(snapshot []Boid) *unk.Vector2D {
+	centerOfMass := unk.NewVec2D(0, 0)
 	count := 0
 
 	for _, otherBoid := range snapshot {
@@ -113,25 +113,25 @@ func (boid *Boid) Cohesion(snapshot []Boid) *ds.Vector2D {
 
 	if count > 0 {
 		centerOfMass.MultiplyByScalar(1 / float64(count))
-		desired := ds.SubtractVectors(*centerOfMass, *boid.position)
+		desired := unk.SubtractVectors(*centerOfMass, *boid.position)
 		desired.SetMagnitude(maxVelocity)
-		steer := ds.SubtractVectors(*desired, *boid.velocity)
+		steer := unk.SubtractVectors(*desired, *boid.velocity)
 		steer.ClampMagnitude(maxforce)
 		return steer
 	}
 
-	return ds.NewVec2D(0, 0)
+	return unk.NewVec2D(0, 0)
 }
 
-func (b *Boid) Separation(snapshot []Boid) *ds.Vector2D {
-	steer := ds.NewVec2D(0, 0)
+func (b *Boid) Separation(snapshot []Boid) *unk.Vector2D {
+	steer := unk.NewVec2D(0, 0)
 	count := 0
 
 	for _, otherBoid := range snapshot {
 		if otherBoid != *b {
 			distance := b.position.Dist(otherBoid.position)
 			if distance < protectedRange {
-				diff := ds.SubtractVectors(*b.position, *otherBoid.position)
+				diff := unk.SubtractVectors(*b.position, *otherBoid.position)
 				diff.SetMagnitude(1 / distance * distance)
 				steer.Add(diff)
 				count++

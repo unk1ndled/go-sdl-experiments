@@ -6,7 +6,7 @@ import (
 	"time"
 
 	automata "github.com/unk1ndled/nier/src/automata/logic"
-	"github.com/unk1ndled/nier/src/ds"
+	"github.com/unk1ndled/nier/src/unk"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	rows ds.Queue[[]int8] = *ds.NewQueue[[]int8]()
+	rows unk.Queue[[]int8] = *unk.NewQueue[[]int8]()
 )
 
 func main() {

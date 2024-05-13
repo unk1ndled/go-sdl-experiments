@@ -26,8 +26,13 @@ func (sc *SdlContext) SetPixel(x, y int, c *Color) {
 }
 
 func (sc *SdlContext) DrawRect(x, y, width, height int, color *Color) {
-	for i := 0; i < width-0; i++ {
-		for j := 0; j < height-0; j++ {
+
+	
+
+	x -= width / 2
+	y -= height / 2
+	for i := 0; i < width; i++ {
+		for j := 0; j < height; j++ {
 			sc.SetPixel(x+i, y+j, color)
 		}
 	}

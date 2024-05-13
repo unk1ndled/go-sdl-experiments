@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 
-	clock "github.com/unk1ndled/nier/src/clock/logic"
+	"github.com/unk1ndled/nier/src/unk"
 )
 
 func main() {
-	clock := clock.NewClock()
-	fmt.Print(clock)
+
+	val := 0.333
+	fmt.Print(unk.Map(val, 0, 1, 0, 10))
 }

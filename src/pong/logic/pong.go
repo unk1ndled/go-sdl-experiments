@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/unk1ndled/nier/src/ds"
+	"github.com/unk1ndled/nier/src/unk"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -33,9 +33,9 @@ var (
 
 type Ball struct {
 	//ball center
-	position     *ds.Vector2D
-	velocity     *ds.Vector2D
-	acceleration *ds.Vector2D
+	position     *unk.Vector2D
+	velocity     *unk.Vector2D
+	acceleration *unk.Vector2D
 }
 
 func (b *Ball) update() {
@@ -58,9 +58,9 @@ func (b *Ball) handleHorizontalStickCollision(extra int) {
 }
 
 func (b *Ball) reset() {
-	b.position = ds.NewVec2D(float64(screenWidth/2), float64(screenHeight/2))
-	b.velocity = ds.RandomVec2D(10, 3).Normalized()
-	b.acceleration = ds.RandomVec2D(0, 0)
+	b.position = unk.NewVec2D(float64(screenWidth/2), float64(screenHeight/2))
+	b.velocity = unk.RandomVec2D(10, 3).Normalized()
+	b.acceleration = unk.RandomVec2D(0, 0)
 	b.velocity.MultiplyByScalar(maxVelocity / 2)
 }
 
@@ -97,8 +97,8 @@ func drawCircle(renderer *sdl.Renderer, centerX, centerY int32) {
 type Pong struct {
 	renderer *sdl.Renderer
 
-	leftStick  *ds.Vector2D
-	rightStick *ds.Vector2D
+	leftStick  *unk.Vector2D
+	rightStick *unk.Vector2D
 
 	sticks []sdl.Rect
 
@@ -114,13 +114,13 @@ func InitPong(sw, sh int32, renderer *sdl.Renderer) *Pong {
 
 		renderer: renderer,
 
-		leftStick:  ds.NewVec2D(distanceToBorder, float64(screenHeight)/2),
-		rightStick: ds.NewVec2D(float64(screenWidth)-(distanceToBorder+stickWidth), float64(screenHeight)/2),
+		leftStick:  unk.NewVec2D(distanceToBorder, float64(screenHeight)/2),
+		rightStick: unk.NewVec2D(float64(screenWidth)-(distanceToBorder+stickWidth), float64(screenHeight)/2),
 
 		ball: Ball{
-			position:     ds.NewVec2D(float64(screenWidth/2), float64(screenHeight/2)),
-			velocity:     ds.RandomVec2D(5, 1).Normalized(),
-			acceleration: ds.RandomVec2D(0, 0),
+			position:     unk.NewVec2D(float64(screenWidth/2), float64(screenHeight/2)),
+			velocity:     unk.RandomVec2D(5, 1).Normalized(),
+			acceleration: unk.RandomVec2D(0, 0),
 		},
 
 		score: [2]int8{0, 0},
@@ -134,7 +134,7 @@ func InitPong(sw, sh int32, renderer *sdl.Renderer) *Pong {
 	return pong
 }
 
-func (p *Pong) moveStick(stick *ds.Vector2D, isUp bool) {
+func (p *Pong) moveStick(stick *unk.Vector2D, isUp bool) {
 	var increment float64
 	sign := 1
 
@@ -153,7 +153,7 @@ func (p *Pong) moveStick(stick *ds.Vector2D, isUp bool) {
 	if math.Abs(increment) > stickSpeed {
 		increment = stickSpeed
 	}
-	stick.Add(ds.NewVec2D(0, float64(sign)*increment))
+	stick.Add(unk.NewVec2D(0, float64(sign)*increment))
 }
 
 func (p *Pong) HandleInput() [2]int {
@@ -191,7 +191,6 @@ func (p *Pong) handleWallCollisions() {
 		p.ball.acceleration[1] = -collisionFactor * p.ball.velocity[1]
 	}
 
-	
 	// Check collision with right wall
 	if x+ballRadius >= float64(screenWidth) {
 		p.handleWallCollisionReset(0)
@@ -211,7 +210,7 @@ func (p *Pong) handleCollisions(extra [2]int) {
 	x, y := p.ball.position[0], p.ball.position[1]
 
 	// Function to check hortizontal collision with a stick
-	checkStickCollision := func(stickPos *ds.Vector2D) bool {
+	checkStickCollision := func(stickPos *unk.Vector2D) bool {
 		return x+ballRadius >= stickPos[0] && x-ballRadius <= stickPos[0]+stickWidth &&
 			(y+ballRadius >= stickPos[1]-invisStick && y-ballRadius <= stickPos[1]+stickHeight+invisStick)
 	}

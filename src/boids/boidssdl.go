@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/unk1ndled/nier/src/ds"
+	"github.com/unk1ndled/nier/src/unk"
 
 	boids "github.com/unk1ndled/nier/src/boids/logic"
 	"github.com/veandco/go-sdl2/sdl"
@@ -24,12 +24,12 @@ var (
 
 type Sym struct {
 	Boids     []boids.Boid
-	Positions []*ds.Vector2D
+	Positions []*unk.Vector2D
 	recs      []sdl.Rect
 }
 
 func NewSym() *Sym {
-	sym := Sym{Boids: []boids.Boid{}, Positions: []*ds.Vector2D{}, recs: []sdl.Rect{}}
+	sym := Sym{Boids: []boids.Boid{}, Positions: []*unk.Vector2D{}, recs: []sdl.Rect{}}
 	for i := 0; i < boidamount; i++ {
 
 		// int conversion issues
