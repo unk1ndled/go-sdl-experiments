@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	screenWidth  = 500
-	screenHeight = 500
-	staramnt     = 500
+	screenWidth  = 800
+	screenHeight = 800
+	staramnt     = 1000
 )
 
 var (
@@ -56,7 +56,7 @@ func main() {
 
 	pixels = make([]byte, screenHeight*screenWidth*4)
 	quit := false
-	sc := sdlutil.NewSdlContext(pixels, screenWidth ,screenHeight)
+	sc := sdlutil.NewSdlContext(pixels, screenWidth, screenHeight)
 	starfield := starfield.NewStarfield(staramnt, screenWidth, screenHeight)
 
 	for !quit {
@@ -73,7 +73,17 @@ func main() {
 			}
 		}
 
+		keys := sdl.GetKeyboardState()
+
+		if keys[sdl.SCANCODE_UP] != 0 {
+			starfield.AlterSpeed(true)
+		} else if keys[sdl.SCANCODE_DOWN] != 0 {
+			starfield.AlterSpeed(false)
+		}
+
+		// skipped := 0
 		starfield.Update(sc, &strclr)
+		// fmt.Println(skipped)
 		tex.Update(nil, unsafe.Pointer(&pixels[0]), 4*screenWidth)
 		renderer.Copy(tex, nil, nil)
 		renderer.Present()

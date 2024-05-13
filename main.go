@@ -8,6 +8,6 @@ import (
 
 func main() {
 
-	val := 0.333
+	val := -0.5
 	fmt.Print(unk.Map(val, 0, 1, 0, 10))
 }

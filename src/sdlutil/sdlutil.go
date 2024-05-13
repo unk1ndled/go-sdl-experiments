@@ -27,8 +27,6 @@ func (sc *SdlContext) SetPixel(x, y int, c *Color) {
 
 func (sc *SdlContext) DrawRect(x, y, width, height int, color *Color) {
 
-	
-
 	x -= width / 2
 	y -= height / 2
 	for i := 0; i < width; i++ {
@@ -69,5 +67,53 @@ func (sc *SdlContext) DrawDigit(digit byte, x, y int, cellSize int, color *Color
 			}
 		}
 
+	}
+}
+
+func (sc *SdlContext) DrawLine(startX, startY, endX, endY int, color *Color) {
+
+	dx := endX - startX
+	dy := endY - startY
+
+	D := 2*dy - dx
+	y := startY
+	for x := startX; x < endX; x++ {
+		sc.SetPixel(x, y, color)
+		if D > 0 {
+			y = y + 1
+			D = D - 2*dx
+		}
+		D = D + 2*dy
+	}
+
+}
+
+func (sc *SdlContext) DrawCircle(centerX, centerY, radius int, color *Color) {
+	x := radius - 1
+	y := int(0)
+	dx := 2
+	dy := 2
+	err := dx - (radius << 1)
+
+	for x >= y {
+		sc.SetPixel(centerX+x, centerY+y, color)
+		sc.SetPixel(centerX+y, centerY+x, color)
+		sc.SetPixel(centerX-y, centerY+x, color)
+		sc.SetPixel(centerX-x, centerY+y, color)
+		sc.SetPixel(centerX-x, centerY-y, color)
+		sc.SetPixel(centerX-y, centerY-x, color)
+		sc.SetPixel(centerX+y, centerY-x, color)
+		sc.SetPixel(centerX+x, centerY-y, color)
+
+		if err <= 0 {
+			y++
+			err += dy
+			dy += 2
+		}
+		if err > 0 {
+			x--
+			dx += 2
+			err += dx - (int(radius) << 1)
+		}
 	}
 }
