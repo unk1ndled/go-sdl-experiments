@@ -8,16 +8,16 @@ type Color struct {
 
 type SdlContext struct {
 	pixels       []byte
-	screenWidth  int
-	screenHeight int
+	ScreenWidth  int
+	ScreenHeight int
 }
 
-func NewSdlContext(pixels []byte, screenWidth int, screenHeight int) *SdlContext {
-	return &SdlContext{pixels: pixels, screenWidth: screenWidth, screenHeight: screenHeight}
+func NewSdlContext(pixels []byte, ScreenWidth int, ScreenHeight int) *SdlContext {
+	return &SdlContext{pixels: pixels, ScreenWidth: ScreenWidth, ScreenHeight: ScreenHeight}
 }
 
 func (sc *SdlContext) SetPixel(x, y int, c *Color) {
-	index := (x + (sc.screenWidth * y)) * 4
+	index := (x + (sc.ScreenWidth * y)) * 4
 	if index+4 <= len(sc.pixels) && index >= 0 {
 		sc.pixels[index] = c.R
 		sc.pixels[index+1] = c.G

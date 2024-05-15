@@ -65,28 +65,25 @@ func main() {
 				quit = true
 			}
 		}
-
 		//reset screen
 		for y := 0; y < screenHeight; y++ {
 			for x := 0; x < screenWidth; x++ {
 				sc.SetPixel(x, y, &black)
 			}
 		}
-
 		keys := sdl.GetKeyboardState()
-
 		if keys[sdl.SCANCODE_UP] != 0 {
 			starfield.AlterSpeed(true)
 		} else if keys[sdl.SCANCODE_DOWN] != 0 {
 			starfield.AlterSpeed(false)
 		}
 
-		// skipped := 0
 		starfield.Update(sc, &strclr)
-		// fmt.Println(skipped)
+
 		tex.Update(nil, unsafe.Pointer(&pixels[0]), 4*screenWidth)
 		renderer.Copy(tex, nil, nil)
 		renderer.Present()
+
 		sdl.Delay(40)
 
 	}
