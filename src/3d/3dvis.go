@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"unsafe"
 
 	"github.com/unk1ndled/nier/src/3d/shapes"
 	"github.com/unk1ndled/nier/src/sdlutil"
@@ -56,7 +55,6 @@ func main() {
 
 	pixels = make([]byte, screenHeight*screenWidth*4)
 	quit := false
-	sc := sdlutil.NewSdlContext(pixels, screenWidth, screenHeight)
 
 	cube := shapes.NewCube(screenWidth/2, screenHeight/2, 50, screenWidth)
 
@@ -67,11 +65,7 @@ func main() {
 			}
 		}
 		//reset screen
-		for y := 0; y < screenHeight; y++ {
-			for x := 0; x < screenWidth; x++ {
-				sc.SetPixel(x, y, &black)
-			}
-		}
+
 		keys := sdl.GetKeyboardState()
 		if keys[sdl.SCANCODE_UP] != 0 {
 			// starfield.AlterSpeed(true)
@@ -79,13 +73,16 @@ func main() {
 			// starfield.AlterSpeed(false)
 		}
 
-		cube.Draw(sc, &strclr)
+		renderer.SetDrawColor(0, 0, 0, 255)
+		renderer.Clear()
+		cube.Update()
+		cube.Draw(renderer, &strclr)
 
-		tex.Update(nil, unsafe.Pointer(&pixels[0]), 4*screenWidth)
-		renderer.Copy(tex, nil, nil)
+		// tex.Update(nil, unsafe.Pointer(&pixels[0]), 4*screenWidth)
+		// renderer.Copy(tex, nil, nil)
 		renderer.Present()
 
-		sdl.Delay(100)
+		sdl.Delay(30)
 
 	}
 }
