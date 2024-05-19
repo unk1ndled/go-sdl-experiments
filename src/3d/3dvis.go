@@ -2,24 +2,33 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 
 	"github.com/unk1ndled/nier/src/3d/shapes"
-	"github.com/unk1ndled/nier/src/sdlutil"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 const (
-	screenWidth  = 800
-	screenHeight = 800
-	staramnt     = 1000
+	screenWidth  = 600
+	screenHeight = 600
 )
 
 var (
-	pixels []byte
-	black  = sdlutil.Color{0, 0, 0}
-	strclr = sdlutil.Color{150, 150, 150}
+	// pixels []byte
+	strclr = sdl.Color{30, 30, 30, 255}
 )
+
+func smoothvalue(i, phase float64) float64 {
+	return math.Sin(0.01*float64(i) + (phase * math.Pi / 3))
+}
+
+func randomRGB(i int) (uint8, uint8, uint8) {
+	R := smoothvalue(float64(i), 0)*127 + 127
+	G := smoothvalue(float64(i), 2)*127 + 127
+	B := smoothvalue(float64(i), 4)*127 + 127
+	return uint8(R), uint8(G), uint8(B)
+}
 
 func main() {
 
@@ -45,44 +54,29 @@ func main() {
 	}
 	defer renderer.Destroy()
 
-	// look into this pixel format
-	tex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STREAMING, screenWidth, screenHeight)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, " Failed to Create TEXTURE : %s\n", err)
-		os.Exit(3)
-	}
-	defer tex.Destroy()
+	cube := shapes.NewCube(6, screenWidth/2, screenHeight/2)
+	colorfactor := 3
 
-	pixels = make([]byte, screenHeight*screenWidth*4)
 	quit := false
-
-	cube := shapes.NewCube(screenWidth/2, screenHeight/2, 50, screenWidth)
-
 	for !quit {
 		for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
 			if e.GetType() == sdl.QUIT {
 				quit = true
 			}
 		}
-		//reset screen
-
-		keys := sdl.GetKeyboardState()
-		if keys[sdl.SCANCODE_UP] != 0 {
-			// starfield.AlterSpeed(true)
-		} else if keys[sdl.SCANCODE_DOWN] != 0 {
-			// starfield.AlterSpeed(false)
-		}
+		colorfactor++
 
 		renderer.SetDrawColor(0, 0, 0, 255)
 		renderer.Clear()
-		cube.Update()
-		cube.Draw(renderer, &strclr)
 
-		// tex.Update(nil, unsafe.Pointer(&pixels[0]), 4*screenWidth)
-		// renderer.Copy(tex, nil, nil)
+		cube.Update()
+		cube.Draw(renderer, strclr)
+		strclr.R, strclr.G, strclr.B = randomRGB(colorfactor)
+		strclr.R = 0
+
 		renderer.Present()
 
-		sdl.Delay(30)
+		sdl.Delay(15)
 
 	}
 }
